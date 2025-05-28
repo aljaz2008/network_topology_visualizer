@@ -55,14 +55,19 @@ A lightweight, Python-powered tool to visualize and analyze your network using d
 7. **Open your browser and explore your network!**
 
 ## 📸 Screenshots
-<img width="1440" alt="Screenshot 2025-05-28 at 14 45 53" src="https://github.com/user-attachments/assets/d95e4cc3-f89f-49bb-a5e9-105c7eaf52cc" />
+
+#### WebUI
+
+<img width="1352" alt="Screenshot 2025-05-28 at 15 18 09" src="https://github.com/user-attachments/assets/f586eb2d-4947-4494-bfd6-872f50b5303f" />
 
 #### in this example we have a device(End_device_3) that has a connection on port 1 connected to Switch1 and this end device has an ip 192.168.10.1
 
-<img width="1440" alt="Screenshot 2025-05-28 at 14 46 36" src="https://github.com/user-attachments/assets/c47ac493-2985-4a1c-8d93-15e5296f24a6" />
+<img width="1440" alt="Screenshot 2025-05-28 at 14 45 53" src="https://github.com/user-attachments/assets/d95e4cc3-f89f-49bb-a5e9-105c7eaf52cc" />
 Example of a simple topology
-<img width="1440" alt="Screenshot 2025-05-28 at 14 47 08" src="https://github.com/user-attachments/assets/1f0ed9f5-79fd-4f37-a589-d488dcbb35fb" />
+<img width="1440" alt="Screenshot 2025-05-28 at 14 46 36" src="https://github.com/user-attachments/assets/c47ac493-2985-4a1c-8d93-15e5296f24a6" />
 Example of a more complex topology
+<img width="1440" alt="Screenshot 2025-05-28 at 14 47 08" src="https://github.com/user-attachments/assets/1f0ed9f5-79fd-4f37-a589-d488dcbb35fb" />
+
 
 ## 🤝 Credits
 
