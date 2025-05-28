@@ -6,8 +6,9 @@ import pandas as pd
 from flask import Flask, render_template, request, redirect, send_file
 import os
 import tempfile
+from datetime import datetime
+import shutil
 import uuid
-
 
 
 
@@ -32,18 +33,29 @@ def index():
     return render_template("index.html")
 
 
-
 @app.route("/upload", methods = ["POST"])
 def show_network():
-    UPLOAD_DIR = os.path.join(os.getcwd(), "uploads")
-    os.makedirs(UPLOAD_DIR, exist_ok=True)
-    app.config["UPLOAD_FOLDER"] = UPLOAD_DIR
+   
     file = request.files["excel"]
     if not file:
         return "No file uploaded", 400
+    filename = os.path.splitext(file.filename)[0]
     
     
-    excel_path = os.path.join(app.config["UPLOAD_FOLDER"],file.filename)
+    if os.path.isdir(filename):
+        shutil.rmtree(filename)
+        UPLOAD_DIR = os.path.join(os.getcwd(), filename)
+        os.makedirs(UPLOAD_DIR, exist_ok=False)
+        app.config["UPLOAD_FOLDER"] = UPLOAD_DIR
+        excel_path = os.path.join(app.config["UPLOAD_FOLDER"],f"{datetime.today().strftime('%Y-%m-%d')}_{file.filename}")
+        
+    else:
+        UPLOAD_DIR = os.path.join(os.getcwd(), filename)
+        os.makedirs(UPLOAD_DIR, exist_ok=False)
+        app.config["UPLOAD_FOLDER"] = UPLOAD_DIR
+        excel_path = os.path.join(app.config["UPLOAD_FOLDER"],f"{datetime.today().strftime('%Y-%m-%d')}_{file.filename}")
+          
+
     file.save(excel_path)
     font_size = int(request.form.get("font_size", 18))
     size_user = int(request.form.get("size_user", 20))
