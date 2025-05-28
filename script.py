@@ -8,6 +8,7 @@ import os
 import tempfile
 from datetime import datetime
 import shutil
+import uuid
 
 
 
@@ -31,9 +32,6 @@ app = Flask(__name__)
 def index():
     return render_template("index.html")
 
-@app.route("/getpartial/{id}", methods = ["POST"])
-def getpartial_info(id):
-    return
 
 @app.route("/upload", methods = ["POST"])
 def show_network():
@@ -64,6 +62,7 @@ def show_network():
     size_router = int(request.form.get("size_router", 20))
     size_switch = int(request.form.get("size_switch", 20))
     size_server = int(request.form.get("size_server", 20))
+    device_isolate = str(request.form.get("device_isolate", ""))
 
     use_naprave = pd.read_excel(excel_path, sheet_name=None)
     
@@ -92,17 +91,114 @@ def show_network():
 
     G = nx.MultiDiGraph()
     edges_added = set()
+    if device_isolate == "":
 
-    for device, ports in slovar.items():
-        for port, connected_device in ports.items():
-            if port == "Type" or connected_device not in slovar:
-                continue
-            key_out = (device, connected_device, port)
-            if key_out not in edges_added:
-                G.add_edge(device, connected_device, label=port)
-                edges_added.add(key_out)
-            for other_port, target in slovar[connected_device].items():
-                if other_port == "Type":
+        for device, ports in slovar.items():
+            for port, connected_device in ports.items():
+                if port == "Type" or connected_device not in slovar:
+                    continue
+                key_out = (device, connected_device, port)
+                if key_out not in edges_added:
+                    G.add_edge(device, connected_device, label=port)
+                    edges_added.add(key_out)
+                for other_port, target in slovar[connected_device].items():
+                    if other_port == "Type":
+                        continue
+                    if target == device:
+                        key_in = (connected_device, device, other_port)
+                        if key_in not in edges_added:
+                            G.add_edge(connected_device, device, label=other_port)
+                            edges_added.add(key_in)
+                        break
+
+        net = Network(height="750px", width="100%", bgcolor="#222", font_color="white", directed=True)
+        net.force_atlas_2based(gravity=-50, central_gravity=0.005, spring_length=150, damping=0.8)
+        net.from_nx(G)
+
+        for i, node in enumerate(net.nodes):
+            node_id = node["id"]
+            node_type = slovar.get(node_id, {}).get("Type", "")
+
+            net.nodes[i]["font"] = {"size": font_size, "color": "white"}
+
+            if node_type == "U":
+                size = size_user
+                net.nodes[i].update({
+                    "shape": "image",
+                    "image": "static/Imgs/cisco_computer.png",
+                    "label": node_id,
+                    "shapeProperties": {"useImageSize": False},
+                    "size": size,
+                    "font": {"size": int(size * 0.6), "color": "white"}
+                })
+            elif node_type == "R":
+                size = size_router
+                net.nodes[i].update({
+                    "shape": "image",
+                    "image": "static/Imgs/cisco_router.png",
+                    "label": node_id,
+                    "shapeProperties": {"useImageSize": False},
+                    "size": size,
+                    "font": {"size": int(size * 0.6), "color": "white"}
+                })
+            elif node_type == "S":
+                size = size_switch
+                net.nodes[i].update({
+                    "shape": "image",
+                    "image": "static/Imgs/cisco_switch.png",
+                    "label": node_id,
+                    "shapeProperties": {"useImageSize": False},
+                    "size": size,
+                    "font": {"size": int(size * 0.6), "color": "white"}
+                })
+            elif node_type == "SR":
+                size = size_server
+                net.nodes[i].update({
+                    "shape": "image",
+                    "image": "static/Imgs/server.png",
+                    "label": node_id,
+                    "shapeProperties": {"useImageSize": False},
+                    "size": size,
+                    "font": {"size": int(size * 0.6), "color": "white"}
+                })
+
+        filename = "graph.html"
+        unique_filename = f"network_{uuid.uuid4().hex}.html"
+        file_path = os.path.join("static", "graphs", unique_filename)
+        net.save_graph(file_path)
+        return send_file(file_path)
+
+    else:
+        i = 1
+        vsi_connected_devici = []
+        print("NEKI JE U DEVICE NAMU")
+        print(device_isolate)
+        print(slovar[device_isolate])
+        for key, value in slovar[device_isolate].items():
+            if key != "Type":
+                print(key)
+                print(slovar[device_isolate][key])
+                G.add_edge(device_isolate, value, label = key)
+                i+=1
+            else:
+                pass
+        for key, value in slovar[device_isolate].items():
+            if key != "Type":
+                if value not in vsi_connected_devici:
+                    vsi_connected_devici.append(value)
+
+        print(vsi_connected_devici)
+        for device in vsi_connected_devici:
+            print(slovar[device])
+            for key, value in slovar[device].items():
+                if value == device_isolate:
+                    G.add_edge(device, device_isolate, label = key)
+            
+
+        '''
+        for device, ports in slovar.items():
+            for port, connected_device in ports.items():
+                if port == "Type" or connected_device not in slovar:
                     continue
                 if target == device:
                     key_in = (connected_device, device, other_port)
@@ -171,6 +267,6 @@ def show_network():
     #net.write_html(filename)
     #webbrowser.open(filename)
     return render_template("network.html")
-
+'''
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True) 
