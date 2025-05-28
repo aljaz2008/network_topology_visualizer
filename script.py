@@ -196,17 +196,7 @@ def show_network():
                     G.add_edge(device, device_isolate, label = key)
             
 
-        '''
-        for device, ports in slovar.items():
-            for port, connected_device in ports.items():
-                if port == "Type" or connected_device not in slovar:
-                    continue
-                if target == device:
-                    key_in = (connected_device, device, other_port)
-                    if key_in not in edges_added:
-                        G.add_edge(connected_device, device, label=other_port)
-                        edges_added.add(key_in)
-                    break
+    
 
     net = Network(height="750px", width="100%", bgcolor="#222", font_color="white", directed=True)
     net.force_atlas_2based(gravity=-50, central_gravity=0.005, spring_length=150, damping=0.8)
@@ -264,10 +254,11 @@ def show_network():
             })
 
     filename = "graph.html"
-    net.save_graph("templates/network.html")
-    #net.write_html(filename)
-    #webbrowser.open(filename)
-    return render_template("network.html")
-'''
+    unique_filename = f"network_{uuid.uuid4().hex}.html"
+    file_path = os.path.join("static", "graphs", unique_filename)
+    net.save_graph(file_path)
+    return send_file(file_path)
+
+
 if __name__ == "__main__":
     app.run(debug=True) 
