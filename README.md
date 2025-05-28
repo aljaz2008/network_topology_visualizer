@@ -41,8 +41,12 @@ A lightweight, Python-powered tool to visualize and analyze your network using d
 6. **Open your browser and explore your network!**
 
 ## 📸 Screenshots
-
-*Screenshots coming soon!*
+<img width="1440" alt="Screenshot 2025-05-28 at 14 45 53" src="https://github.com/user-attachments/assets/d95e4cc3-f89f-49bb-a5e9-105c7eaf52cc" />
+How to create the excel file :)
+<img width="1440" alt="Screenshot 2025-05-28 at 14 46 36" src="https://github.com/user-attachments/assets/c47ac493-2985-4a1c-8d93-15e5296f24a6" />
+Example of a simple topology
+<img width="1440" alt="Screenshot 2025-05-28 at 14 47 08" src="https://github.com/user-attachments/assets/1f0ed9f5-79fd-4f37-a589-d488dcbb35fb" />
+Example of a more complex topology
 
 ## 🤝 Credits
 
