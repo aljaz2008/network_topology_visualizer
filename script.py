@@ -118,9 +118,9 @@ def show_network():
         for i, node in enumerate(net.nodes):
             node_id = node["id"]
             node_type = slovar.get(node_id, {}).get("Type", "")
-
+            ip = slovar.get(node_id, {}).get("IP", "")
             net.nodes[i]["font"] = {"size": font_size, "color": "white"}
-
+            tooltip = f"Device: {node_id}\nIP:{ip}"
             if node_type == "U":
                 size = size_user
                 net.nodes[i].update({
@@ -129,7 +129,8 @@ def show_network():
                     "label": node_id,
                     "shapeProperties": {"useImageSize": False},
                     "size": size,
-                    "font": {"size": int(size * 0.6), "color": "white"}
+                    "font": {"size": int(size * 0.6), "color": "white"},
+                    "title":tooltip
                 })
             elif node_type == "R":
                 size = size_router
