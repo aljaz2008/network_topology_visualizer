@@ -1,15 +1,20 @@
+import argparse
 from pyvis.network import Network
 import networkx as nx
 import webbrowser
 import pandas as pd
 
-# Adjustable font size variable
-FONT_SIZE = 18
+parser = argparse.ArgumentParser(description="Visualize network topology from Excel.")
+parser.add_argument("--font-size", type=int, default=18, help="Font size for node labels")
+parser.add_argument("--excel", type=str, default="text_sheet.xlsx", help="Path to the Excel file")
+parser.add_argument("--size-user", type=int, default=20, help="Size of user nodes")
+parser.add_argument("--size-router", type=int, default=20, help="Size of router nodes")
+parser.add_argument("--size-switch", type=int, default=20, help="Size of switch nodes")
+parser.add_argument("--size-server", type=int, default=20, help="Size of server nodes")
+args = parser.parse_args()
 
-# Load all sheets from Excel
-use_naprave = pd.read_excel("text_sheet.xlsx", sheet_name=None)
+use_naprave = pd.read_excel(args.excel, sheet_name=None)
 
-# Build device connection dictionary
 slovar = dict()
 for sheet_name, df in use_naprave.items():
     sheet_name = sheet_name.strip()
@@ -30,25 +35,17 @@ for device, ports in slovar.items():
         if port != "Type":
             print(f"{device} ({port}) -> {connected_device}")
 
-# Use MultiDiGraph to allow multiple edges
 G = nx.MultiDiGraph()
-
-# Track already added edges using tuples for efficiency
 edges_added = set()
 
-# Add edges to the graph
 for device, ports in slovar.items():
     for port, connected_device in ports.items():
         if port == "Type" or connected_device not in slovar:
             continue
-
-        # Tuple keys to track edge uniqueness
         key_out = (device, connected_device, port)
         if key_out not in edges_added:
             G.add_edge(device, connected_device, label=port)
             edges_added.add(key_out)
-
-        # Add reverse edge if appropriate
         for other_port, target in slovar[connected_device].items():
             if other_port == "Type":
                 continue
@@ -59,24 +56,18 @@ for device, ports in slovar.items():
                     edges_added.add(key_in)
                 break
 
-# Create Pyvis network
 net = Network(height="750px", width="100%", bgcolor="#222", font_color="white", directed=True)
-
-# Use force atlas layout for clearer separation
 net.force_atlas_2based(gravity=-50, central_gravity=0.005, spring_length=150, damping=0.8)
-
-# Load graph into pyvis
 net.from_nx(G)
 
-# Enhance node visuals and font
 for i, node in enumerate(net.nodes):
     node_id = node["id"]
     node_type = slovar.get(node_id, {}).get("Type", "")
 
-    net.nodes[i]["font"] = {"size": FONT_SIZE, "color": "white"}
+    net.nodes[i]["font"] = {"size": args.font_size, "color": "white"}
 
-    if node_type == "U":  # End users group
-        size = 20
+    if node_type == "U":
+        size = args.size_user
         net.nodes[i].update({
             "shape": "image",
             "image": "Imgs/cisco_computer.png",
@@ -85,8 +76,8 @@ for i, node in enumerate(net.nodes):
             "size": size,
             "font": {"size": int(size * 0.6), "color": "white"}
         })
-    elif node_type == "R":  # Routers
-        size = 20
+    elif node_type == "R":
+        size = args.size_router
         net.nodes[i].update({
             "shape": "image",
             "image": "Imgs/cisco_router.png",
@@ -95,8 +86,8 @@ for i, node in enumerate(net.nodes):
             "size": size,
             "font": {"size": int(size * 0.6), "color": "white"}
         })
-    elif node_type == "S":  # Switches
-        size = 20
+    elif node_type == "S":
+        size = args.size_switch
         net.nodes[i].update({
             "shape": "image",
             "image": "Imgs/cisco_switch.png",
@@ -105,8 +96,8 @@ for i, node in enumerate(net.nodes):
             "size": size,
             "font": {"size": int(size * 0.6), "color": "white"}
         })
-    elif node_type == "SR":  # Serversw
-        size = 20
+    elif node_type == "SR":
+        size = args.size_server
         net.nodes[i].update({
             "shape": "image",
             "image": "Imgs/server.png",
@@ -115,7 +106,7 @@ for i, node in enumerate(net.nodes):
             "size": size,
             "font": {"size": int(size * 0.6), "color": "white"}
         })
-# Save and display the visualization
+
 filename = "graph.html"
 net.write_html(filename)
 webbrowser.open(filename)
