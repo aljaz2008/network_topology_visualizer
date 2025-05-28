@@ -30,19 +30,39 @@ A lightweight, Python-powered tool to visualize and analyze your network using d
    pip install -r requirements.txt
    ```
 
-4. **Prepare your Excel file:**  
-   *(Instructions on Excel file format coming soon!)*
+4. **Prepare your Excel file:**
+   #### In your excel file you have sheets(representing your devices) and the parameters in the sheets
+   ##### Example of a sheet(LOOK IN EXAMPLES_XLSX folder)(also in screenshots)
+   | Port | connected | Type | IP |
+   |------|-----------|------|----|
+   |port on device|name of device connecting to|type of this device|ip of this device|
+   
+   
+   | Type    | Meaning |
+   | -------- | ------- |
+   | S  | Switch    |
+   | SR | Server   |
+   | R    | Router   |
+   | U  | User    |
 
-5. **Start the Flask app:**
+
+
+6. **Start the Flask app:**
    ```bash
    flask run
    ```
 
-6. **Open your browser and explore your network!**
+7. **Open your browser and explore your network!**
 
 ## 📸 Screenshots
+<img width="1440" alt="Screenshot 2025-05-28 at 14 45 53" src="https://github.com/user-attachments/assets/d95e4cc3-f89f-49bb-a5e9-105c7eaf52cc" />
 
-*Screenshots coming soon!*
+#### in this example we have a device(End_device_3) that has a connection on port 1 connected to Switch1 and this end device has an ip 192.168.10.1
+
+<img width="1440" alt="Screenshot 2025-05-28 at 14 46 36" src="https://github.com/user-attachments/assets/c47ac493-2985-4a1c-8d93-15e5296f24a6" />
+Example of a simple topology
+<img width="1440" alt="Screenshot 2025-05-28 at 14 47 08" src="https://github.com/user-attachments/assets/1f0ed9f5-79fd-4f37-a589-d488dcbb35fb" />
+Example of a more complex topology
 
 ## 🤝 Credits
 
