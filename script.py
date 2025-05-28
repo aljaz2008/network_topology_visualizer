@@ -74,11 +74,14 @@ def show_network():
         tempdict = {}
         for _, row in df.iterrows():
             port = str(row["Port"]).strip()
+            ip = str(row.get("IP","")).strip()
             connected_to = str(row["Conected_to"]).strip()
             if pd.notna(connected_to) and connected_to.lower() != "nan":
                 tempdict[port] = connected_to
             if str(row["Type"]).lower() != "nan":
                 tempdict['Type'] = str(row['Type']).strip()
+            if ip:
+                tempdict["IP"] = ip
         slovar[sheet_name] = tempdict
 
     print("Devices in network:", list(slovar.keys()))
@@ -115,8 +118,10 @@ def show_network():
     for i, node in enumerate(net.nodes):
         node_id = node["id"]
         node_type = slovar.get(node_id, {}).get("Type", "")
-
+        ip = slovar.get(node_id, {}).get("IP", "")
         net.nodes[i]["font"] = {"size": font_size, "color": "white"}
+        tooltip = f"Device: {node_id}\nIP:{ip}"
+        
 
         if node_type == "U":
             size = size_user
@@ -126,7 +131,9 @@ def show_network():
                 "label": node_id,
                 "shapeProperties": {"useImageSize": False},
                 "size": size,
-                "font": {"size": int(size * 0.6), "color": "white"}
+                "font": {"size": int(size * 0.6), "color": "white"},
+                "title":tooltip
+                
             })
         elif node_type == "R":
             size = size_router
