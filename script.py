@@ -86,6 +86,14 @@ def show_network():
     size_server = int(request.form.get("size_server", 20))
     device_isolate = str(request.form.get("device_isolate", ""))
 
+    theme = request.form.get("theme", "dark")
+    if theme == "light":
+        bgcolor = "#fff"
+        font_color = "black"
+    else:
+        bgcolor = "#222"
+        font_color = "white"
+
     use_naprave = pd.read_excel(excel_path, sheet_name=None)
     
     slovar = dict()
@@ -139,16 +147,18 @@ def show_network():
                             edges_added.add(key_in)
                         break
 
-        net = Network(height="750px", width="100%", bgcolor="#222", font_color="white", directed=True)
+        net = Network(height="750px", width="100%", bgcolor=bgcolor, font_color=font_color, directed=True)
         net.force_atlas_2based(gravity=-50, central_gravity=0.005, spring_length=150, damping=0.8)
         net.from_nx(G)
 
+        # When updating node font color:
         for i, node in enumerate(net.nodes):
             node_id = node["id"]
             node_type = slovar.get(node_id, {}).get("Type", "")
             ip = slovar.get(node_id, {}).get("IP", "")
-            net.nodes[i]["font"] = {"size": font_size, "color": "white"}
+            net.nodes[i]["font"] = {"size": font_size, "color": font_color}
             tooltip = f"Device: {node_id}\nIP:{ip}"
+
             if node_type == "U":
                 size = size_user
                 net.nodes[i].update({
@@ -157,8 +167,8 @@ def show_network():
                     "label": node_id,
                     "shapeProperties": {"useImageSize": False},
                     "size": size,
-                    "font": {"size": int(size * 0.6), "color": "white"},
-                    "title":tooltip
+                    "font": {"size": int(size * 0.6), "color": font_color},
+                    "title": tooltip
                 })
             elif node_type == "R":
                 size = size_router
@@ -168,7 +178,7 @@ def show_network():
                     "label": node_id,
                     "shapeProperties": {"useImageSize": False},
                     "size": size,
-                    "font": {"size": int(size * 0.6), "color": "white"}
+                    "font": {"size": int(size * 0.6), "color": font_color}
                 })
             elif node_type == "S":
                 size = size_switch
@@ -178,7 +188,7 @@ def show_network():
                     "label": node_id,
                     "shapeProperties": {"useImageSize": False},
                     "size": size,
-                    "font": {"size": int(size * 0.6), "color": "white"}
+                    "font": {"size": int(size * 0.6), "color": font_color}
                 })
             elif node_type == "SR":
                 size = size_server
@@ -188,8 +198,16 @@ def show_network():
                     "label": node_id,
                     "shapeProperties": {"useImageSize": False},
                     "size": size,
-                    "font": {"size": int(size * 0.6), "color": "white"}
+                    "font": {"size": int(size * 0.6), "color": font_color}
                 })
+
+        # Set edge label font color for visibility and add black outline for readability
+        for edge in net.edges:
+            edge["font"] = {
+                "color": font_color,
+                "strokeWidth": 4,
+                "strokeColor": "black"
+            }
 
         filename = "graph.html"
         unique_filename = f"network_{uuid.uuid4().hex}.html"
@@ -226,7 +244,7 @@ def show_network():
 
     
 
-    net = Network(height="750px", width="100%", bgcolor="#222", font_color="white", directed=True)
+    net = Network(height="750px", width="100%", bgcolor=bgcolor, font_color=font_color, directed=True)
     net.force_atlas_2based(gravity=-50, central_gravity=0.005, spring_length=150, damping=0.8)
     net.from_nx(G)
 
