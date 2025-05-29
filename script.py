@@ -26,6 +26,28 @@ use_naprave = pd.read_excel(args.excel, sheet_name=None) """
 
 app = Flask(__name__)
 
+edge_type_colors = {
+    ("U", "U"): "blue",
+    ("U", "R"): "orange",
+    ("U", "S"): "blue",
+    ("U", "SR"): "purple",
+
+    ("R", "U"): "orange",
+    ("R", "R"): "red",
+    ("R", "S"): "red",
+    ("R", "SR"): "brown",
+
+    ("S", "U"): "blue",
+    ("S", "R"): "red",
+    ("S", "S"): "green",
+    ("S", "SR"): "green",
+
+    ("SR", "U"): "purple",
+    ("SR", "R"): "brown",
+    ("SR", "S"): "green",
+    ("SR", "SR"): "black",
+}
+
 
 
 @app.route("/")
@@ -99,7 +121,10 @@ def show_network():
                     continue
                 key_out = (device, connected_device, port)
                 if key_out not in edges_added:
-                    G.add_edge(device, connected_device, label=port)
+                    type1 = slovar.get(device, {}).get("Type", "")
+                    type2 = slovar.get(connected_device, {}).get("Type", "")
+                    edge_color = edge_type_colors.get((type1, type2), "gray")
+                    G.add_edge(device, connected_device, label=port, color=edge_color)
                     edges_added.add(key_out)
                 for other_port, target in slovar[connected_device].items():
                     if other_port == "Type":
@@ -107,7 +132,10 @@ def show_network():
                     if target == device:
                         key_in = (connected_device, device, other_port)
                         if key_in not in edges_added:
-                            G.add_edge(connected_device, device, label=other_port)
+                            type1 = slovar.get(connected_device, {}).get("Type", "")
+                            type2 = slovar.get(device, {}).get("Type", "")
+                            edge_color = edge_type_colors.get((type1, type2), "gray")
+                            G.add_edge(connected_device, device, label=other_port, color=edge_color)
                             edges_added.add(key_in)
                         break
 
@@ -261,4 +289,4 @@ def show_network():
 
 
 if __name__ == "__main__":
-    app.run(debug=True) 
+    app.run(debug=True)
