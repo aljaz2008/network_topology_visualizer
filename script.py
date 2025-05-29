@@ -91,7 +91,7 @@ def show_network():
         bgcolor = "#fff"
         font_color = "black"
     else:
-        bgcolor = "#222"
+        bgcolor = "#36454F"  # Dark gray background
         font_color = "white"
 
     use_naprave = pd.read_excel(excel_path, sheet_name=None)
@@ -201,12 +201,13 @@ def show_network():
                     "font": {"size": int(size * 0.6), "color": font_color}
                 })
 
-        # Set edge label font color for visibility and add black outline for readability
+        # Set edge label font color for visibility and add outline for readability
+        edge_stroke_color = "#fff" if font_color == "black" else "#000"
         for edge in net.edges:
             edge["font"] = {
                 "color": font_color,
                 "strokeWidth": 4,
-                "strokeColor": "black"
+                "strokeColor": edge_stroke_color
             }
 
         filename = "graph.html"
