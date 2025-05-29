@@ -91,7 +91,7 @@ def show_network():
         bgcolor = "#fff"
         font_color = "black"
     else:
-        bgcolor = "#36454F"  # Dark gray background
+        bgcolor = "#000"  # Completely black background for dark mode
         font_color = "white"
 
     use_naprave = pd.read_excel(excel_path, sheet_name=None)
@@ -224,10 +224,11 @@ def show_network():
         print(slovar[device_isolate])
         for key, value in slovar[device_isolate].items():
             if key != "Type":
-                print(key)
-                print(slovar[device_isolate][key])
-                G.add_edge(device_isolate, value, label = key)
-                i+=1
+                type1 = slovar.get(device_isolate, {}).get("Type", "")
+                type2 = slovar.get(value, {}).get("Type", "")
+                edge_color = edge_type_colors.get((type1, type2), "gray")
+                G.add_edge(device_isolate, value, label=key, color=edge_color)
+                i += 1
             else:
                 pass
         for key, value in slovar[device_isolate].items():
@@ -237,11 +238,12 @@ def show_network():
 
         print(vsi_connected_devici)
         for device in vsi_connected_devici:
-            print(slovar[device])
             for key, value in slovar[device].items():
                 if value == device_isolate:
-                    G.add_edge(device, device_isolate, label = key)
-            
+                    type1 = slovar.get(device, {}).get("Type", "")
+                    type2 = slovar.get(device_isolate, {}).get("Type", "")
+                    edge_color = edge_type_colors.get((type1, type2), "gray")
+                    G.add_edge(device, device_isolate, label=key, color=edge_color)
 
     
 
