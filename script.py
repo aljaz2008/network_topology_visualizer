@@ -252,55 +252,60 @@ def show_network():
     net.from_nx(G)
 
     for i, node in enumerate(net.nodes):
-        node_id = node["id"]
-        node_type = slovar.get(node_id, {}).get("Type", "")
-        ip = slovar.get(node_id, {}).get("IP", "")
-        net.nodes[i]["font"] = {"size": font_size, "color": "white"}
-        tooltip = f"Device: {node_id}\nIP:{ip}"
-        
+            node_id = node["id"]
+            node_type = slovar.get(node_id, {}).get("Type", "")
+            ip = slovar.get(node_id, {}).get("IP", "")
+            net.nodes[i]["font"] = {"size": font_size, "color": font_color}
+            tooltip = f"Device: {node_id}\nIP:{ip}"
 
-        if node_type == "U":
-            size = size_user
-            net.nodes[i].update({
-                "shape": "image",
-                "image": "static/Imgs/cisco_computer.png",
-                "label": node_id,
-                "shapeProperties": {"useImageSize": False},
-                "size": size,
-                "font": {"size": int(size * 0.6), "color": "white"},
-                "title":tooltip
-                
-            })
-        elif node_type == "R":
-            size = size_router
-            net.nodes[i].update({
-                "shape": "image",
-                "image": "static/Imgs/cisco_router.png",
-                "label": node_id,
-                "shapeProperties": {"useImageSize": False},
-                "size": size,
-                "font": {"size": int(size * 0.6), "color": "white"}
-            })
-        elif node_type == "S":
-            size = size_switch
-            net.nodes[i].update({
-                "shape": "image",
-                "image": "static/Imgs/cisco_switch.png",
-                "label": node_id,
-                "shapeProperties": {"useImageSize": False},
-                "size": size,
-                "font": {"size": int(size * 0.6), "color": "white"}
-            })
-        elif node_type == "SR":
-            size = size_server
-            net.nodes[i].update({
-                "shape": "image",
-                "image": "static/Imgs/server.png",
-                "label": node_id,
-                "shapeProperties": {"useImageSize": False},
-                "size": size,
-                "font": {"size": int(size * 0.6), "color": "white"}
-            })
+            if node_type == "U":
+                size = size_user
+                net.nodes[i].update({
+                    "shape": "image",
+                    "image": "static/Imgs/cisco_computer.png",
+                    "label": node_id,
+                    "shapeProperties": {"useImageSize": False},
+                    "size": size,
+                    "font": {"size": int(size * 0.6), "color": font_color},
+                    "title": tooltip
+                })
+            elif node_type == "R":
+                size = size_router
+                net.nodes[i].update({
+                    "shape": "image",
+                    "image": "static/Imgs/cisco_router.png",
+                    "label": node_id,
+                    "shapeProperties": {"useImageSize": False},
+                    "size": size,
+                    "font": {"size": int(size * 0.6), "color": font_color}
+                })
+            elif node_type == "S":
+                size = size_switch
+                net.nodes[i].update({
+                    "shape": "image",
+                    "image": "static/Imgs/cisco_switch.png",
+                    "label": node_id,
+                    "shapeProperties": {"useImageSize": False},
+                    "size": size,
+                    "font": {"size": int(size * 0.6), "color": font_color}
+                })
+            elif node_type == "SR":
+                size = size_server
+                net.nodes[i].update({
+                    "shape": "image",
+                    "image": "static/Imgs/server.png",
+                    "label": node_id,
+                    "shapeProperties": {"useImageSize": False},
+                    "size": size,
+                    "font": {"size": int(size * 0.6), "color": font_color}
+                })
+            edge_stroke_color = "#fff" if font_color == "black" else "#000"
+            for edge in net.edges:
+                edge["font"] = {
+                    "color": font_color,
+                    "strokeWidth": 4,
+                    "strokeColor": edge_stroke_color
+                }
 
     filename = "graph.html"
     unique_filename = f"network_{uuid.uuid4().hex}.html"

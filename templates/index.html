@@ -56,6 +56,8 @@
         Visualize Network
       </button>
     </form>
+
+    <div id="loading" class="hidden text-center mt-4">Generating network graph...</div>
   </div>
 
   <script>
@@ -76,6 +78,10 @@ document.addEventListener("DOMContentLoaded", function() {
     }
   });
   observer.observe(document.body, { childList: true, subtree: true });
+});
+
+document.getElementById("network-form").addEventListener("submit", function() {
+  document.getElementById("loading").classList.remove("hidden");
 });
 </script>
 </body>
