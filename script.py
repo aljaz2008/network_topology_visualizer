@@ -3,7 +3,7 @@ from pyvis.network import Network
 import networkx as nx
 import webbrowser
 import pandas as pd
-from flask import Flask, render_template, request, redirect, send_file
+from flask import Flask, render_template, request, redirect, send_file, session
 import os
 import tempfile
 from datetime import datetime
@@ -25,6 +25,7 @@ args = parser.parse_args()
 use_naprave = pd.read_excel(args.excel, sheet_name=None) """
 
 app = Flask(__name__)
+app.secret_key = "your_secret_key"  # Required for session to work
 
 edge_type_colors = {
     ("U", "U"): "blue",
@@ -50,43 +51,53 @@ edge_type_colors = {
 
 
 
-@app.route("/")
+@app.route("/", methods=["GET", "POST"])
 def index():
     return render_template("index.html")
 
 
-@app.route("/upload", methods = ["POST"])
-def show_network():
-   
+@app.route("/isolation", methods=['POST'])
+def isolation():
     file = request.files["excel"]
     if not file:
         return "No file uploaded", 400
     filename = os.path.splitext(file.filename)[0]
-    
 
     if os.path.isdir(filename):
         shutil.rmtree(filename)
-        UPLOAD_DIR = os.path.join(os.getcwd(), filename)
-        os.makedirs(UPLOAD_DIR, exist_ok=False)
-        app.config["UPLOAD_FOLDER"] = UPLOAD_DIR
-        excel_path = os.path.join(app.config["UPLOAD_FOLDER"],f"{datetime.today().strftime('%Y-%m-%d')}_{file.filename}")
-        
-    else:
-        UPLOAD_DIR = os.path.join(os.getcwd(), filename)
-        os.makedirs(UPLOAD_DIR, exist_ok=False)
-        app.config["UPLOAD_FOLDER"] = UPLOAD_DIR
-        excel_path = os.path.join(app.config["UPLOAD_FOLDER"],f"{datetime.today().strftime('%Y-%m-%d')}_{file.filename}")
-          
+    UPLOAD_DIR = os.path.join(os.getcwd(), filename)
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
+    app.config["UPLOAD_FOLDER"] = UPLOAD_DIR
+    excel_path = os.path.join(app.config["UPLOAD_FOLDER"], f"{datetime.today().strftime('%Y-%m-%d')}_{file.filename}")
 
     file.save(excel_path)
-    font_size = int(request.form.get("font_size", 18))
-    size_user = int(request.form.get("size_user", 20))
-    size_router = int(request.form.get("size_router", 20))
-    size_switch = int(request.form.get("size_switch", 20))
-    size_server = int(request.form.get("size_server", 20))
-    device_isolate = str(request.form.get("device_isolate", ""))
+    session["excel_path"] = excel_path
+    session["font_size"] = int(request.form.get("font_size", 18))
+    session["size_user"] = int(request.form.get("size_user", 20))
+    session["size_router"] = int(request.form.get("size_router", 20))
+    session["size_switch"] = int(request.form.get("size_switch", 20))
+    session["size_server"] = int(request.form.get("size_server", 20))
+    session["theme"] = request.form.get("theme", "dark")
 
-    theme = request.form.get("theme", "dark")
+    # Extract device names from the Excel file
+    use_naprave = pd.read_excel(excel_path, sheet_name=None)
+    device_names = [sheet_name.strip() for sheet_name in use_naprave.keys()]
+
+    return render_template("isolation.html", device_names=device_names)
+
+@app.route("/upload", methods=["POST"])
+def show_network():
+    excel_path = session.get("excel_path")
+    font_size = session.get("font_size", 18)
+    size_user = session.get("size_user", 20)
+    size_router = session.get("size_router", 20)
+    size_switch = session.get("size_switch", 20)
+    size_server = session.get("size_server", 20)
+    device_isolate = str(request.form.get("device_isolate", ""))
+    theme = request.form.get("theme", session.get("theme", "dark"))
+
+    # ...rest of your code...
+
     if theme == "light":
         bgcolor = "#fff"
         font_color = "black"

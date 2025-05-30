@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Device to Isolate</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800">
+  <div class="max-w-3xl mx-auto mt-10 bg-white p-8 rounded-2xl shadow-xl">
+    <h1 class="text-3xl font-bold mb-6 text-center text-indigo-600">Select Device to Isolate</h1>
+    <form id="isolate-form" action="/upload" method="POST" class="space-y-6">
+      <div>
+        <label class="block font-medium mb-1">Device to isolate (optional)</label>
+        <select name="device_isolate" id="device_isolate" class="w-full border border-gray-300 rounded px-3 py-2">
+          <option value="">-- Show whole network --</option>
+          {% for device in device_names %}
+            <option value="{{ device }}">{{ device }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="flex items-center mb-4">
+        <label class="mr-2 font-medium">Theme:</label>
+        <select name="theme" id="theme" class="border border-gray-300 rounded px-2 py-1">
+          <option value="dark" {% if session.theme == "dark" %}selected{% endif %}>Dark</option>
+          <option value="light" {% if session.theme == "light" %}selected{% endif %}>Light</option>
+        </select>
+      </div>
+      <button type="submit" class="bg-indigo-600 text-white px-5 py-2 rounded hover:bg-indigo-700 font-semibold w-full">
+        Visualize Network
+      </button>
+    </form>
+  </div>
+</body>
+</html>
