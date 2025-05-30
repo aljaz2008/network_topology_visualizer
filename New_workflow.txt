@@ -1,0 +1,3 @@
+127.0.0.1:5000 (definiras excel file font size user node size router node size switch node size server node size in theme)
+Das analyze namest visualize in pol te prpele na dropdown za device to isolate in po prtisns visualize
+in pol ti returna topology tak kt je treba
