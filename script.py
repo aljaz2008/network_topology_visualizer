@@ -63,7 +63,7 @@ def show_network():
         return "No file uploaded", 400
     filename = os.path.splitext(file.filename)[0]
     
-    
+
     if os.path.isdir(filename):
         shutil.rmtree(filename)
         UPLOAD_DIR = os.path.join(os.getcwd(), filename)
