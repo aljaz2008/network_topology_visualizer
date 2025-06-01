@@ -5,7 +5,7 @@ import webbrowser
 import pandas as pd
 from flask import Flask, render_template, request, redirect, send_file, session
 import os
-import tempfile
+import tempfile 
 from datetime import datetime
 import shutil
 import uuid
@@ -25,7 +25,7 @@ args = parser.parse_args()
 use_naprave = pd.read_excel(args.excel, sheet_name=None) """
 
 app = Flask(__name__)
-app.secret_key = "your_secret_key"  # Required for session to work
+app.secret_key = "your_secret_key"  
 
 edge_type_colors = {
     ("U", "U"): "blue",
@@ -79,7 +79,6 @@ def isolation():
     session["size_server"] = int(request.form.get("size_server", 20))
     session["theme"] = request.form.get("theme", "dark")
 
-    # Extract device names from the Excel file
     use_naprave = pd.read_excel(excel_path, sheet_name=None)
     device_names = [sheet_name.strip() for sheet_name in use_naprave.keys()]
 
@@ -96,13 +95,11 @@ def show_network():
     device_isolate = str(request.form.get("device_isolate", ""))
     theme = request.form.get("theme", session.get("theme", "dark"))
 
-    # ...rest of your code...
-
     if theme == "light":
         bgcolor = "#fff"
         font_color = "black"
     else:
-        bgcolor = "#000"  # Completely black background for dark mode
+        bgcolor = "#000"  
         font_color = "white"
 
     use_naprave = pd.read_excel(excel_path, sheet_name=None)
@@ -162,7 +159,6 @@ def show_network():
         net.force_atlas_2based(gravity=-50, central_gravity=0.005, spring_length=150, damping=0.8)
         net.from_nx(G)
 
-        # When updating node font color:
         for i, node in enumerate(net.nodes):
             node_id = node["id"]
             node_type = slovar.get(node_id, {}).get("Type", "")
@@ -212,7 +208,7 @@ def show_network():
                     "font": {"size": int(size * 0.6), "color": font_color}
                 })
 
-        # Set edge label font color for visibility and add outline for readability
+
         edge_stroke_color = "#fff" if font_color == "black" else "#000"
         for edge in net.edges:
             edge["font"] = {
