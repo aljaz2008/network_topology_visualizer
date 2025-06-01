@@ -113,12 +113,18 @@ def show_network():
             port = str(row["Port"]).strip()
             ip = str(row.get("IP","")).strip()
             connected_to = str(row["Conected_to"]).strip()
+            vlan = str(row.get("Vlan", "")).strip()
+            trunk = str(row.get("Trunk", "")).strip()
             if pd.notna(connected_to) and connected_to.lower() != "nan":
                 tempdict[port] = connected_to
             if str(row["Type"]).lower() != "nan":
                 tempdict['Type'] = str(row['Type']).strip()
             if ip:
                 tempdict["IP"] = ip
+            if vlan:
+                tempdict["Vlan"] = vlan
+            if trunk:
+                tempdict["Trunk"] = trunk
         slovar[sheet_name] = tempdict
 
     print("Devices in network:", list(slovar.keys()))
@@ -163,8 +169,10 @@ def show_network():
             node_id = node["id"]
             node_type = slovar.get(node_id, {}).get("Type", "")
             ip = slovar.get(node_id, {}).get("IP", "")
+            vlan = slovar.get(node_id, {}).get("Vlan", "")
+            trunk = slovar.get(node_id, {}).get("Trunk", "")
             net.nodes[i]["font"] = {"size": font_size, "color": font_color}
-            tooltip = f"Device: {node_id}\nIP:{ip}"
+            tooltip = f"Device: {node_id}\nIP:{ip}\nVlan:{vlan}\nTrunk:{trunk}"
 
             if node_type == "U":
                 size = size_user
@@ -185,7 +193,8 @@ def show_network():
                     "label": node_id,
                     "shapeProperties": {"useImageSize": False},
                     "size": size,
-                    "font": {"size": int(size * 0.6), "color": font_color}
+                    "font": {"size": int(size * 0.6), "color": font_color},
+                    "title": tooltip
                 })
             elif node_type == "S":
                 size = size_switch
@@ -195,7 +204,8 @@ def show_network():
                     "label": node_id,
                     "shapeProperties": {"useImageSize": False},
                     "size": size,
-                    "font": {"size": int(size * 0.6), "color": font_color}
+                    "font": {"size": int(size * 0.6), "color": font_color},
+                    "title": tooltip
                 })
             elif node_type == "SR":
                 size = size_server
@@ -205,7 +215,8 @@ def show_network():
                     "label": node_id,
                     "shapeProperties": {"useImageSize": False},
                     "size": size,
-                    "font": {"size": int(size * 0.6), "color": font_color}
+                    "font": {"size": int(size * 0.6), "color": font_color},
+                    "title": tooltip
                 })
 
 
