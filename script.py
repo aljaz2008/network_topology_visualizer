@@ -113,12 +113,18 @@ def show_network():
             port = str(row["Port"]).strip()
             ip = str(row.get("IP","")).strip()
             connected_to = str(row["Conected_to"]).strip()
+            vlan = str(row.get("Vlan", "")).strip()
+            trunk = str(row.get("Trunk", "")).strip()
             if pd.notna(connected_to) and connected_to.lower() != "nan":
                 tempdict[port] = connected_to
             if str(row["Type"]).lower() != "nan":
                 tempdict['Type'] = str(row['Type']).strip()
             if ip:
                 tempdict["IP"] = ip
+            if vlan:
+                tempdict["Vlan"] = vlan
+            if trunk:
+                tempdict["Trunk"] = trunk
         slovar[sheet_name] = tempdict
 
     print("Devices in network:", list(slovar.keys()))
@@ -140,7 +146,14 @@ def show_network():
                     type1 = slovar.get(device, {}).get("Type", "")
                     type2 = slovar.get(connected_device, {}).get("Type", "")
                     edge_color = edge_type_colors.get((type1, type2), "gray")
-                    G.add_edge(device, connected_device, label=port, color=edge_color)
+                    trunk_status = slovar.get(device, {}).get("Trunk", "")
+                    G.add_edge(
+                        device,
+                        connected_device,
+                        label=port,
+                        color=edge_color,
+                        title=f"Trunk: {trunk_status if trunk_status else 'No'}"
+                    )
                     edges_added.add(key_out)
                 for other_port, target in slovar[connected_device].items():
                     if other_port == "Type":
@@ -163,8 +176,10 @@ def show_network():
             node_id = node["id"]
             node_type = slovar.get(node_id, {}).get("Type", "")
             ip = slovar.get(node_id, {}).get("IP", "")
+            vlan = slovar.get(node_id, {}).get("Vlan", "")
+            trunk = slovar.get(node_id, {}).get("Trunk", "")
             net.nodes[i]["font"] = {"size": font_size, "color": font_color}
-            tooltip = f"Device: {node_id}\nIP:{ip}"
+            tooltip = f"Device: {node_id}\nIP:{ip}\nVlan:{vlan}"
 
             if node_type == "U":
                 size = size_user
@@ -185,7 +200,8 @@ def show_network():
                     "label": node_id,
                     "shapeProperties": {"useImageSize": False},
                     "size": size,
-                    "font": {"size": int(size * 0.6), "color": font_color}
+                    "font": {"size": int(size * 0.6), "color": font_color},
+                    "title": tooltip
                 })
             elif node_type == "S":
                 size = size_switch
@@ -195,7 +211,8 @@ def show_network():
                     "label": node_id,
                     "shapeProperties": {"useImageSize": False},
                     "size": size,
-                    "font": {"size": int(size * 0.6), "color": font_color}
+                    "font": {"size": int(size * 0.6), "color": font_color},
+                    "title": tooltip
                 })
             elif node_type == "SR":
                 size = size_server
@@ -205,7 +222,8 @@ def show_network():
                     "label": node_id,
                     "shapeProperties": {"useImageSize": False},
                     "size": size,
-                    "font": {"size": int(size * 0.6), "color": font_color}
+                    "font": {"size": int(size * 0.6), "color": font_color},
+                    "title": tooltip
                 })
 
 
@@ -226,93 +244,102 @@ def show_network():
     else:
         i = 1
         vsi_connected_devici = []
-        print("NEKI JE U DEVICE NAMU")
-        print(device_isolate)
-        print(slovar[device_isolate])
         for key, value in slovar[device_isolate].items():
-            if key != "Type":
+            if key not in ["Type", "IP", "Vlan", "Trunk"]:
                 type1 = slovar.get(device_isolate, {}).get("Type", "")
                 type2 = slovar.get(value, {}).get("Type", "")
                 edge_color = edge_type_colors.get((type1, type2), "gray")
-                G.add_edge(device_isolate, value, label=key, color=edge_color)
-                i += 1
-            else:
-                pass
-        for key, value in slovar[device_isolate].items():
-            if key != "Type":
-                if value not in vsi_connected_devici:
+                trunk_status = slovar.get(device_isolate, {}).get("Trunk", "")
+                G.add_edge(
+                    device_isolate,
+                    value,
+                    label=key,
+                    color=edge_color,
+                    title=f"Trunk: {trunk_status if trunk_status else 'No'}"
+                )
+                if value in slovar and value not in vsi_connected_devici:
                     vsi_connected_devici.append(value)
-
-        print(vsi_connected_devici)
         for device in vsi_connected_devici:
+            if device not in slovar:
+                continue
             for key, value in slovar[device].items():
-                if value == device_isolate:
+                if key not in ["Type", "IP", "Vlan", "Trunk"] and value == device_isolate:
                     type1 = slovar.get(device, {}).get("Type", "")
                     type2 = slovar.get(device_isolate, {}).get("Type", "")
                     edge_color = edge_type_colors.get((type1, type2), "gray")
-                    G.add_edge(device, device_isolate, label=key, color=edge_color)
-
-    
+                    trunk_status = slovar.get(device, {}).get("Trunk", "")
+                    G.add_edge(
+                        device,
+                        device_isolate,
+                        label=key,
+                        color=edge_color,
+                        title=f"Trunk: {trunk_status if trunk_status else 'No'}"
+                    )
 
     net = Network(height="750px", width="100%", bgcolor=bgcolor, font_color=font_color, directed=True)
     net.force_atlas_2based(gravity=-50, central_gravity=0.005, spring_length=150, damping=0.8)
     net.from_nx(G)
 
     for i, node in enumerate(net.nodes):
-            node_id = node["id"]
-            node_type = slovar.get(node_id, {}).get("Type", "")
-            ip = slovar.get(node_id, {}).get("IP", "")
-            net.nodes[i]["font"] = {"size": font_size, "color": font_color}
-            tooltip = f"Device: {node_id}\nIP:{ip}"
+        node_id = node["id"]
+        node_type = slovar.get(node_id, {}).get("Type", "")
+        ip = slovar.get(node_id, {}).get("IP", "")
+        vlan = slovar.get(node_id, {}).get("Vlan", "")
+        trunk = slovar.get(node_id, {}).get("Trunk", "")
+        net.nodes[i]["font"] = {"size": font_size, "color": font_color}
+        tooltip = f"Device: {node_id}\nType: {node_type}\nIP: {ip}\nVlan: {vlan}\nTrunk: {trunk}"
+        if node_type == "U":
+            size = size_user
+            net.nodes[i].update({
+                "shape": "image",
+                "image": "static/Imgs/cisco_computer.png",
+                "label": node_id,
+                "shapeProperties": {"useImageSize": False},
+                "size": size,
+                "font": {"size": int(size * 0.6), "color": font_color},
+                "title": tooltip
+            })
+        elif node_type == "R":
+            size = size_router
+            net.nodes[i].update({
+                "shape": "image",
+                "image": "static/Imgs/cisco_router.png",
+                "label": node_id,
+                "shapeProperties": {"useImageSize": False},
+                "size": size,
+                "font": {"size": int(size * 0.6), "color": font_color},
+                "title": tooltip
+            })
+        elif node_type == "S":
+            size = size_switch
+            net.nodes[i].update({
+                "shape": "image",
+                "image": "static/Imgs/cisco_switch.png",
+                "label": node_id,
+                "shapeProperties": {"useImageSize": False},
+                "size": size,
+                "font": {"size": int(size * 0.6), "color": font_color},
+                "title": tooltip
+            })
+        elif node_type == "SR":
+            size = size_server
+            net.nodes[i].update({
+                "shape": "image",
+                "image": "static/Imgs/server.png",
+                "label": node_id,
+                "shapeProperties": {"useImageSize": False},
+                "size": size,
+                "font": {"size": int(size * 0.6), "color": font_color},
+                "title": tooltip
+            })
 
-            if node_type == "U":
-                size = size_user
-                net.nodes[i].update({
-                    "shape": "image",
-                    "image": "static/Imgs/cisco_computer.png",
-                    "label": node_id,
-                    "shapeProperties": {"useImageSize": False},
-                    "size": size,
-                    "font": {"size": int(size * 0.6), "color": font_color},
-                    "title": tooltip
-                })
-            elif node_type == "R":
-                size = size_router
-                net.nodes[i].update({
-                    "shape": "image",
-                    "image": "static/Imgs/cisco_router.png",
-                    "label": node_id,
-                    "shapeProperties": {"useImageSize": False},
-                    "size": size,
-                    "font": {"size": int(size * 0.6), "color": font_color}
-                })
-            elif node_type == "S":
-                size = size_switch
-                net.nodes[i].update({
-                    "shape": "image",
-                    "image": "static/Imgs/cisco_switch.png",
-                    "label": node_id,
-                    "shapeProperties": {"useImageSize": False},
-                    "size": size,
-                    "font": {"size": int(size * 0.6), "color": font_color}
-                })
-            elif node_type == "SR":
-                size = size_server
-                net.nodes[i].update({
-                    "shape": "image",
-                    "image": "static/Imgs/server.png",
-                    "label": node_id,
-                    "shapeProperties": {"useImageSize": False},
-                    "size": size,
-                    "font": {"size": int(size * 0.6), "color": font_color}
-                })
-            edge_stroke_color = "#fff" if font_color == "black" else "#000"
-            for edge in net.edges:
-                edge["font"] = {
-                    "color": font_color,
-                    "strokeWidth": 4,
-                    "strokeColor": edge_stroke_color
-                }
+    edge_stroke_color = "#fff" if font_color == "black" else "#000"
+    for edge in net.edges:
+        edge["font"] = {
+            "color": font_color,
+            "strokeWidth": 4,
+            "strokeColor": edge_stroke_color
+        }
 
     filename = "graph.html"
     unique_filename = f"network_{uuid.uuid4().hex}.html"
