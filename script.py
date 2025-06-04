@@ -13,16 +13,7 @@ import uuid
 
 
 
-""" parser = argparse.ArgumentParser(description="Visualize network topology from Excel.")
-parser.add_argument("--font-size", type=int, default=18, help="Font size for node labels")
-parser.add_argument("--excel", type=str, default="text_sheet.xlsx", help="Path to the Excel file")
-parser.add_argument("--size-user", type=int, default=20, help="Size of user nodes")
-parser.add_argument("--size-router", type=int, default=20, help="Size of router nodes")
-parser.add_argument("--size-switch", type=int, default=20, help="Size of switch nodes")
-parser.add_argument("--size-server", type=int, default=20, help="Size of server nodes")
-args = parser.parse_args()
 
-use_naprave = pd.read_excel(args.excel, sheet_name=None) """
 
 app = Flask(__name__)
 app.secret_key = "your_secret_key"  
@@ -58,6 +49,27 @@ edge_type_colors = {
 def index():
     return render_template("index.html")
 
+@app.route("/patch_panels", methods=["GET"])
+def get_patch_panel_sheets():
+    excel_path = session.get("excel_path")
+    if not excel_path or not os.path.exists(excel_path):
+        return {"error": "Excel file not found. Please upload first."}, 400
+
+    try:
+        xl = pd.ExcelFile(excel_path)
+        patch_sheets = [sheet for sheet in xl.sheet_names if "patch" in sheet.lower()]
+        if not patch_sheets:
+            return {"message": "No patch panel sheets found."}, 404
+
+        patch_data = {}
+        for sheet in patch_sheets:
+            df = xl.parse(sheet).fillna("")
+            patch_data[sheet] = df.to_dict(orient="records")
+        
+        return render_template("patch.html", patch_data=patch_data)
+
+    except Exception as e:
+        return {"error": str(e)}, 500
 
 @app.route("/isolation", methods=['POST'])
 def isolation():
@@ -402,6 +414,7 @@ def show_network():
                 "font": {"size": int(size * 0.6), "color": font_color},
                 "title": tooltip
             })
+        
 
     edge_stroke_color = "#fff" if font_color == "black" else "#000"
     for edge in net.edges:
