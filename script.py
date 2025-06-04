@@ -183,18 +183,30 @@ def show_network():
             trunk = slovar.get(node_id, {}).get("Trunk", "")
             net.nodes[i]["font"] = {"size": font_size, "color": font_color}
 
+            # General info
+            tooltip = f"Device: {node_id}\nType: {node_type}\nIP: {ip}\nVlan: {vlan}\nTrunk: {trunk}"
+
+            # --- NEW LOGIC ---
+            # Find all unique devices this node connects to
+            connected_devices = set(
+                d for p, d in slovar.get(node_id, {}).items() if p not in ["Type", "IP", "Vlan", "Trunk"]
+            )
+            for remote in connected_devices:
+                if remote not in slovar:
+                    continue
+                # All local ports to this remote
+                local_ports = [p for p, d in slovar[node_id].items() if d == remote and p not in ["Type", "IP", "Vlan", "Trunk"]]
+                # All remote ports to this node
+                remote_ports = [p for p, d in slovar[remote].items() if d == node_id and p not in ["Type", "IP", "Vlan", "Trunk"]]
+                # Pair in order
+                for idx, local_port in enumerate(local_ports):
+                    remote_port = remote_ports[idx] if idx < len(remote_ports) else ""
+                    tooltip += f"\nPort: {local_port} -> {remote}"
+                    if remote_port:
+                        tooltip += f" | {remote_port}"
+
+            # Node rendering logic
             if node_type == "P":
-                tooltip = f"Patch Panel: {node_id}\n"
-                # Find all unique devices connected to this patch panel
-                connected_devices = set(
-                    d for p, d in slovar.get(node_id, {}).items() if p not in ["Type", "IP", "Vlan", "Trunk"]
-                )
-                for device in connected_devices:
-                    if device not in slovar:
-                        continue
-                    pairs = get_patchpanel_port_mapping(slovar, node_id, device)
-                    for patch_port, device_port in pairs:
-                        tooltip += f"Patch Panel Port: {patch_port} | Connected Device: {device} | Device Port: {device_port}\n"
                 size = size_switch  # Or define a separate size_patchpanel if you want
                 net.nodes[i].update({
                     "shape": "image",
@@ -214,7 +226,7 @@ def show_network():
                     "shapeProperties": {"useImageSize": False},
                     "size": size,
                     "font": {"size": int(size * 0.6), "color": font_color},
-                    "title": f"Device: {node_id}\nType: {node_type}\nIP: {ip}\nVlan: {vlan}\nTrunk: {trunk}"
+                    "title": tooltip
                 })
             elif node_type == "R":
                 size = size_router
@@ -225,7 +237,7 @@ def show_network():
                     "shapeProperties": {"useImageSize": False},
                     "size": size,
                     "font": {"size": int(size * 0.6), "color": font_color},
-                    "title": f"Device: {node_id}\nType: {node_type}\nIP: {ip}\nVlan: {vlan}\nTrunk: {trunk}"
+                    "title": tooltip
                 })
             elif node_type == "S":
                 size = size_switch
@@ -236,7 +248,7 @@ def show_network():
                     "shapeProperties": {"useImageSize": False},
                     "size": size,
                     "font": {"size": int(size * 0.6), "color": font_color},
-                    "title": f"Device: {node_id}\nType: {node_type}\nIP: {ip}\nVlan: {vlan}\nTrunk: {trunk}"
+                    "title": tooltip
                 })
             elif node_type == "SR":
                 size = size_server
@@ -247,7 +259,7 @@ def show_network():
                     "shapeProperties": {"useImageSize": False},
                     "size": size,
                     "font": {"size": int(size * 0.6), "color": font_color},
-                    "title": f"Device: {node_id}\nType: {node_type}\nIP: {ip}\nVlan: {vlan}\nTrunk: {trunk}"
+                    "title": tooltip
                 })
 
 
@@ -312,18 +324,30 @@ def show_network():
         trunk = slovar.get(node_id, {}).get("Trunk", "")
         net.nodes[i]["font"] = {"size": font_size, "color": font_color}
 
+        # General info
+        tooltip = f"Device: {node_id}\nType: {node_type}\nIP: {ip}\nVlan: {vlan}\nTrunk: {trunk}"
+
+        # --- NEW LOGIC ---
+        # Find all unique devices this node connects to
+        connected_devices = set(
+            d for p, d in slovar.get(node_id, {}).items() if p not in ["Type", "IP", "Vlan", "Trunk"]
+        )
+        for remote in connected_devices:
+            if remote not in slovar:
+                continue
+            # All local ports to this remote
+            local_ports = [p for p, d in slovar[node_id].items() if d == remote and p not in ["Type", "IP", "Vlan", "Trunk"]]
+            # All remote ports to this node
+            remote_ports = [p for p, d in slovar[remote].items() if d == node_id and p not in ["Type", "IP", "Vlan", "Trunk"]]
+            # Pair in order
+            for idx, local_port in enumerate(local_ports):
+                remote_port = remote_ports[idx] if idx < len(remote_ports) else ""
+                tooltip += f"\nPort: {local_port} -> {remote}"
+                if remote_port:
+                    tooltip += f" | {remote_port}"
+
+        # Node rendering logic
         if node_type == "P":
-            tooltip = f"Patch Panel: {node_id}\n"
-            # Find all unique devices connected to this patch panel
-            connected_devices = set(
-                d for p, d in slovar.get(node_id, {}).items() if p not in ["Type", "IP", "Vlan", "Trunk"]
-            )
-            for device in connected_devices:
-                if device not in slovar:
-                    continue
-                pairs = get_patchpanel_port_mapping(slovar, node_id, device)
-                for patch_port, device_port in pairs:
-                    tooltip += f"Patch Panel Port: {patch_port} | Connected Device: {device} | Device Port: {device_port}\n"
             size = size_switch  # Or define a separate size_patchpanel if you want
             net.nodes[i].update({
                 "shape": "image",
@@ -343,7 +367,7 @@ def show_network():
                 "shapeProperties": {"useImageSize": False},
                 "size": size,
                 "font": {"size": int(size * 0.6), "color": font_color},
-                "title": f"Device: {node_id}\nType: {node_type}\nIP: {ip}\nVlan: {vlan}\nTrunk: {trunk}"
+                "title": tooltip
             })
         elif node_type == "R":
             size = size_router
@@ -354,7 +378,7 @@ def show_network():
                 "shapeProperties": {"useImageSize": False},
                 "size": size,
                 "font": {"size": int(size * 0.6), "color": font_color},
-                "title": f"Device: {node_id}\nType: {node_type}\nIP: {vlan}\nVlan: {vlan}\nTrunk: {trunk}"
+                "title": tooltip
             })
         elif node_type == "S":
             size = size_switch
@@ -365,7 +389,7 @@ def show_network():
                 "shapeProperties": {"useImageSize": False},
                 "size": size,
                 "font": {"size": int(size * 0.6), "color": font_color},
-                "title": f"Device: {node_id}\nType: {node_type}\nIP: {ip}\nVlan: {vlan}\nTrunk: {trunk}"
+                "title": tooltip
             })
         elif node_type == "SR":
             size = size_server
@@ -376,7 +400,7 @@ def show_network():
                 "shapeProperties": {"useImageSize": False},
                 "size": size,
                 "font": {"size": int(size * 0.6), "color": font_color},
-                "title": f"Device: {node_id}\nType: {node_type}\nIP: {ip}\nVlan: {vlan}\nTrunk: {trunk}"
+                "title": tooltip
             })
 
     edge_stroke_color = "#fff" if font_color == "black" else "#000"
