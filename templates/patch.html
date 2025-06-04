@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Edit Patch Panel Sheets</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+    h2 { margin-top: 40px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background-color: #007bff; color: #fff; }
+    td { background-color: #fff; }
+    td[contenteditable="true"] { background-color: #eaffea; }
+    button { margin: 10px 0; padding: 10px 20px; }
+  </style>
+</head>
+<body>
+
+  <h1>Edit Patch Panel Data</h1>
+
+  <form id="saveForm">
+    {% for sheet_name, rows in patch_data.items() %}
+      <h2>{{ sheet_name }}</h2>
+      {% if rows %}
+        <table data-sheet="{{ sheet_name }}">
+          <thead>
+            <tr>
+              {% for col in rows[0].keys() %}
+                <th>{{ col }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in rows %}
+              <tr>
+                {% for val in row.values() %}
+                  <td contenteditable="true">{{ val }}</td>
+                {% endfor %}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p>No data in this sheet.</p>
+      {% endif %}
+    {% endfor %}
+    <button type="button" onclick="submitData()">Save Changes</button>
+  </form>
+  <a href="/download_excel"><button>Download Updated Excel</button></a>
+  <script>
+    function submitData() {
+      const tables = document.querySelectorAll("table");
+      const data = {};
+
+      tables.forEach((table) => {
+        const sheet = table.dataset.sheet;
+        const headers = Array.from(table.querySelectorAll("thead th")).map(th => th.textContent.trim());
+        const rows = Array.from(table.querySelectorAll("tbody tr")).map(tr => {
+          const cells = tr.querySelectorAll("td");
+          const row = {};
+          cells.forEach((cell, index) => {
+            row[headers[index]] = cell.textContent.trim();
+          });
+          return row;
+        });
+        data[sheet] = rows;
+      });
+
+      fetch("/save_patch_panels", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      })
+      .then(res => res.ok ? alert("Changes saved successfully!") : alert("Save failed."))
+      .catch(err => console.error(err));
+    }
+  </script>
+
+</body>
+</html>

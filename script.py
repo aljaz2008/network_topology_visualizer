@@ -9,6 +9,7 @@ import tempfile
 from datetime import datetime
 import shutil
 import uuid
+import scapy
 
 
 
@@ -49,6 +50,28 @@ edge_type_colors = {
 def index():
     return render_template("index.html")
 
+@app.route("/download_excel")
+def download_excel():
+    excel_path = session.get("excel_path")
+    if not excel_path or not os.path.exists(excel_path):
+        return "No Excel file to download.", 404
+    return send_file(excel_path, as_attachment=True)
+
+@app.route("/get_active_devices", methods=["GET"])
+def get_active_devices():
+    arp = ARP("10.0.0.0/16")
+    ether = Ether(dst="ff:ff:ff:ff:ff:ff")
+    packet = ether / arp
+
+    result = srp(packet, timeout = 2, iface=ens160, verbose = 0)[0]
+    devices = []
+    print("IP Address\t Mac Address")
+    print("-" * 40)
+    for sent, received in result:
+        print(f"{received.psrc}\t{received.hwsrc}")
+        devices.append({'ip': received.psrc, 'mac': received.hwsrc})
+    return devices
+
 @app.route("/patch_panels", methods=["GET"])
 def get_patch_panel_sheets():
     excel_path = session.get("excel_path")
@@ -70,6 +93,34 @@ def get_patch_panel_sheets():
 
     except Exception as e:
         return {"error": str(e)}, 500
+@app.route("/save_patch_panels", methods=["POST"])
+def save_patch_panel_changes():
+    data = request.get_json()
+    excel_path = session.get("excel_path")
+
+    if not excel_path or not os.path.exists(excel_path):
+        return "Excel file not found.", 400
+
+    try:
+        
+        original_excel = pd.ExcelFile(excel_path)
+        
+        all_sheets = {sheet: original_excel.parse(sheet) for sheet in original_excel.sheet_names}
+
+        
+        for sheet_name, rows in data.items():
+            df = pd.DataFrame(rows)
+            all_sheets[sheet_name] = df
+
+        
+        with pd.ExcelWriter(excel_path, engine='openpyxl', mode='w') as writer:
+            for sheet, df in all_sheets.items():
+                df.to_excel(writer, sheet_name=sheet, index=False)
+
+        return "Success", 200
+
+    except Exception as e:
+        return f"Error saving Excel: {str(e)}", 500
 
 @app.route("/isolation", methods=['POST'])
 def isolation():
