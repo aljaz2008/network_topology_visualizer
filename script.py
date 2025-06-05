@@ -234,7 +234,7 @@ def show_network():
                             edges_added.add(key_in)
                         break
 
-        net = Network(height="750px", width="100%", bgcolor=bgcolor, font_color=font_color, directed=True)
+        net = Network(height="900px", width="100%", bgcolor=bgcolor, font_color=font_color, directed=True)
         net.force_atlas_2based(gravity=-50, central_gravity=0.005, spring_length=150, damping=0.8)
         net.from_nx(G)
 
