@@ -181,21 +181,32 @@ def show_network():
             connected_to = str(row["Conected_to"]).strip()
             vlan = str(row.get("Vlan", "")).strip()
             trunk = str(row.get("Trunk", "")).strip()
+            dev_type = str(row.get("Type", "")).strip()
             if pd.notna(connected_to) and connected_to.lower() != "nan":
                 tempdict[port] = connected_to
-            if str(row["Type"]).lower() != "nan":
-                tempdict['Type'] = str(row['Type']).strip()
+            if dev_type and dev_type.lower() != "nan":
+                tempdict['Type'] = dev_type
             if ip:
                 tempdict["IP"] = ip
             if vlan:
                 tempdict["Vlan"] = vlan
             if trunk:
                 tempdict["Trunk"] = trunk
+            # Honeypot-specific fields
+            if dev_type == "H":
+                protocol = str(row.get("Protocol", "")).strip()
+                geoloc = str(row.get("geoloc", "")).strip()
+                if protocol:
+                    tempdict["Protocol"] = protocol
+                if geoloc:
+                    tempdict["geoloc"] = geoloc
         slovar[sheet_name] = tempdict
 
     print("Devices in network:", list(slovar.keys()))
     for device, ports in slovar.items():
         for port, connected_device in ports.items():
+            if port in ["Type", "IP", "Vlan", "Trunk", "Con_type", "geoloc"] or connected_device not in slovar:
+                continue
             if port != "Type":
                 print(f"{device} ({port}) -> {connected_device}")
 
@@ -244,25 +255,27 @@ def show_network():
             ip = slovar.get(node_id, {}).get("IP", "")
             vlan = slovar.get(node_id, {}).get("Vlan", "")
             trunk = slovar.get(node_id, {}).get("Trunk", "")
+            con_type = slovar.get(node_id, {}).get("Con_type", "")
+            geoloc = slovar.get(node_id, {}).get("geoloc", "")
             net.nodes[i]["font"] = {"size": font_size, "color": font_color}
 
             # General info
             tooltip = f"Device: {node_id}\nType: {node_type}\nIP: {ip}\nVlan: {vlan}\nTrunk: {trunk}"
-        
+            if node_type == "H":
+                protocol = slovar.get(node_id, {}).get("Protocol", "")
+                geoloc = slovar.get(node_id, {}).get("geoloc", "")
+                if node_type == "H":
+                    tooltip += f"\nProtocol: {protocol}\nGeoloc: {geoloc}"
 
-            # --- NEW LOGIC ---
-            # Find all unique devices this node connects to
+            # Port/connection info (same logic as before)
             connected_devices = set(
-                d for p, d in slovar.get(node_id, {}).items() if p not in ["Type", "IP", "Vlan", "Trunk"]
+                d for p, d in slovar.get(node_id, {}).items() if p not in ["Type", "IP", "Vlan", "Trunk", "Con_type", "geoloc"]
             )
             for remote in connected_devices:
                 if remote not in slovar:
                     continue
-                # All local ports to this remote
-                local_ports = [p for p, d in slovar[node_id].items() if d == remote and p not in ["Type", "IP", "Vlan", "Trunk"]]
-                # All remote ports to this node
-                remote_ports = [p for p, d in slovar[remote].items() if d == node_id and p not in ["Type", "IP", "Vlan", "Trunk"]]
-                # Pair in order
+                local_ports = [p for p, d in slovar[node_id].items() if d == remote and p not in ["Type", "IP", "Vlan", "Trunk", "Con_type", "geoloc"]]
+                remote_ports = [p for p, d in slovar[remote].items() if d == node_id and p not in ["Type", "IP", "Vlan", "Trunk", "Con_type", "geoloc"]]
                 for idx, local_port in enumerate(local_ports):
                     remote_port = remote_ports[idx] if idx < len(remote_ports) else ""
                     tooltip += f"\nPort: {local_port} -> {remote}"
@@ -270,8 +283,28 @@ def show_network():
                         tooltip += f" | {remote_port}"
 
             # Node rendering logic
-            if node_type == "P":
-                size = size_switch  # Or define a separate size_patchpanel if you want
+            if node_type == "H":
+                size = size_user  # Or define a separate size_honeypot if you want
+                net.nodes[i].update({
+                    "shape": "circularImage",
+                    "image": "static/Imgs/honeypot.jpeg",
+                    "label": node_id,
+                    "shapeProperties": {"useImageSize": False},
+                    "size": size,
+                    "font": {"size": int(size * 0.6), "color": font_color},
+                    "title": tooltip,
+                    "borderWidth":5,
+                    "color": {
+                        "border": "#FF0F1B",
+                        "background": "#97C2FC",
+                        "highlight": {
+                            "border": "#00FF1E",     # Glow effect color
+                            "background": "#FFFFF",  # Glow background}
+                            "borderWidth": 5
+                }}
+                })
+            elif node_type == "P":
+                size = size_switch
                 net.nodes[i].update({
                     "shape": "image",
                     "image": "static/Imgs/patch_panel.png",
@@ -360,7 +393,7 @@ def show_network():
         i = 1
         vsi_connected_devici = []
         for key, value in slovar[device_isolate].items():
-            if key not in ["Type", "IP", "Vlan", "Trunk"]:
+            if key not in ["Type", "IP", "Vlan", "Trunk", "Protocol", "geoloc"]:
                 type1 = slovar.get(device_isolate, {}).get("Type", "")
                 type2 = slovar.get(value, {}).get("Type", "")
                 edge_color = edge_type_colors.get((type1, type2), "gray")
@@ -378,7 +411,7 @@ def show_network():
             if device not in slovar:
                 continue
             for key, value in slovar[device].items():
-                if key not in ["Type", "IP", "Vlan", "Trunk"] and value == device_isolate:
+                if key not in ["Type", "IP", "Vlan", "Trunk", "Protocol", "geoloc"] and value == device_isolate:
                     type1 = slovar.get(device, {}).get("Type", "")
                     type2 = slovar.get(device_isolate, {}).get("Type", "")
                     edge_color = edge_type_colors.get((type1, type2), "gray")
@@ -401,33 +434,49 @@ def show_network():
         ip = slovar.get(node_id, {}).get("IP", "")
         vlan = slovar.get(node_id, {}).get("Vlan", "")
         trunk = slovar.get(node_id, {}).get("Trunk", "")
+        protocol = slovar.get(node_id, {}).get("Protocol", "")
+        geoloc = slovar.get(node_id, {}).get("geoloc", "")
         net.nodes[i]["font"] = {"size": font_size, "color": font_color}
 
-        # General info
         tooltip = f"Device: {node_id}\nType: {node_type}\nIP: {ip}\nVlan: {vlan}\nTrunk: {trunk}"
+        if node_type == "H":
+            tooltip += f"\nProtocol: {protocol}\nGeoloc: {geoloc}"
 
-        # --- NEW LOGIC ---
-        # Find all unique devices this node connects to
         connected_devices = set(
-            d for p, d in slovar.get(node_id, {}).items() if p not in ["Type", "IP", "Vlan", "Trunk"]
+            d for p, d in slovar.get(node_id, {}).items() if p not in ["Type", "IP", "Vlan", "Trunk", "Protocol", "geoloc"]
         )
         for remote in connected_devices:
             if remote not in slovar:
                 continue
-            # All local ports to this remote
-            local_ports = [p for p, d in slovar[node_id].items() if d == remote and p not in ["Type", "IP", "Vlan", "Trunk"]]
-            # All remote ports to this node
-            remote_ports = [p for p, d in slovar[remote].items() if d == node_id and p not in ["Type", "IP", "Vlan", "Trunk"]]
-            # Pair in order
+            local_ports = [p for p, d in slovar[node_id].items() if d == remote and p not in ["Type", "IP", "Vlan", "Trunk", "Protocol", "geoloc"]]
+            remote_ports = [p for p, d in slovar[remote].items() if d == node_id and p not in ["Type", "IP", "Vlan", "Trunk", "Protocol", "geoloc"]]
             for idx, local_port in enumerate(local_ports):
                 remote_port = remote_ports[idx] if idx < len(remote_ports) else ""
                 tooltip += f"\nPort: {local_port} -> {remote}"
                 if remote_port:
                     tooltip += f" | {remote_port}"
 
-        # Node rendering logic
-        if node_type == "P":
-            size = size_switch  # Or define a separate size_patchpanel if you want
+        if node_type == "H":
+            size = size_user
+            net.nodes[i].update({
+                "shape": "circularImage",
+                "image": "static/Imgs/honeypot.jpeg",
+                "label": node_id,
+                "shapeProperties": {"useImageSize": False},
+                "size": size,
+                "font": {"size": int(size * 0.6), "color": font_color},
+                "title": tooltip,
+                 "color": {
+                        "border": "#FFFFF",
+                        "background": "#97C2FC",
+                        "highlight": {
+                            "border": "#00FF0D",     # Glow effect color
+                            "background": "#FFFFF",  # Glow background}
+                            "borderWidth": 5
+                }}
+            })
+        elif node_type == "P":
+            size = size_switch
             net.nodes[i].update({
                 "shape": "image",
                 "image": "static/Imgs/patch_panel.png",
@@ -490,7 +539,6 @@ def show_network():
                             "borderWidth": 5
                 }}
             })
-        
 
     edge_stroke_color = "#fff" if font_color == "black" else "#000"
     for edge in net.edges:
@@ -509,9 +557,6 @@ def show_network():
 
 
 def key_for_patch_panel_port(device_dict, patch_panel_name, dev_port):
-    """
-    Returns the patch panel port name that this device port connects to, if any.
-    """
     for port, target in device_dict.items():
         if port == dev_port and target == patch_panel_name:
             return port
@@ -519,12 +564,8 @@ def key_for_patch_panel_port(device_dict, patch_panel_name, dev_port):
 
 
 def get_patchpanel_port_mapping(slovar, patchpanel_name, device_name):
-    """
-    Returns a list of (patch_port, device_port) tuples for all connections between patchpanel and device,
-    paired in order of appearance.
-    """
-    patch_ports = [p for p, d in slovar[patchpanel_name].items() if d == device_name and p not in ["Type", "IP", "Vlan", "Trunk"]]
-    device_ports = [p for p, d in slovar[device_name].items() if d == patchpanel_name and p not in ["Type", "IP", "Vlan", "Trunk"]]
+    patch_ports = [p for p, d in slovar[patchpanel_name].items() if d == device_name and p not in ["Type", "IP", "Vlan", "Trunk", "Protocol", "geoloc"]]
+    device_ports = [p for p, d in slovar[device_name].items() if d == patchpanel_name and p not in ["Type", "IP", "Vlan", "Trunk", "Protocol", "geoloc"]]
     return list(zip(patch_ports, device_ports))
 
 
