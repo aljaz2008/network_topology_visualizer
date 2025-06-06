@@ -7,7 +7,7 @@ A lightweight, Python-powered tool to visualize and analyze your network using d
 - **Excel-Powered:** Scrape network data from an Excel file where each sheet represents a device.
 - **Instant Visualization:** Compose a full HTML report of your network in seconds.
 - **Interactive Analysis:** Start the Flask app, tweak parameters, and instantly explore your network topology.
-- **Device Isolation:** Zoom in on any device to see its direct connections.
+- **Device Isolation:** Zoom in or select any device to see its direct connections.
 - **Detailed Info:** View device names, connection ports, IP addresses, and MAC addresses.
 - **Easy to Use:** Simple setup with Python and Flask.
 
@@ -33,10 +33,10 @@ A lightweight, Python-powered tool to visualize and analyze your network using d
 4. **Prepare your Excel file:**
    #### In your excel file you have sheets(representing your devices) and the parameters in the sheets
    ##### Example of a sheet(LOOK IN EXAMPLES_XLSX folder)(also in screenshots)
-   | Port | connected | Type | IP |
-   |------|-----------|------|----|
-   |port on device|name of device connecting to|type of this device|ip of this device|
-   
+   | Port | connected | Type | IP | Vlan | Trunk | Protocol | geoloc |
+   |------|-----------|------|----| -----| ----- | ---------| -------|
+   |port on device|name of device connecting to|type of this device|ip of this device| vlan this device is in | Tunk yes/no | Protocol of the device(only in honeypot sheet) |
+| geoloc(only in honeypot sheet)   
    
    | Type    | Meaning |
    | -------- | ------- |
@@ -44,7 +44,8 @@ A lightweight, Python-powered tool to visualize and analyze your network using d
    | SR | Server   |
    | R    | Router   |
    | U  | User    |
-
+   | P  | Patch |
+   | H  | Honeypot |
 
 
 6. **Start the Flask app:**
