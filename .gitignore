@@ -23,3 +23,6 @@ Thumbs.db
 
 # Ignore Excel files if you don't want to track them
 /uploads
+/lib
+
+New_workflow.txt

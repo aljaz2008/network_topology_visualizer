@@ -1,3 +1,0 @@
-Xcel_options
-Port Connected_to Type Vlan Trunk   IP
-str    str         str   int  Bool  str
