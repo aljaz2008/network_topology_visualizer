@@ -248,6 +248,7 @@ def show_network():
 
             # General info
             tooltip = f"Device: {node_id}\nType: {node_type}\nIP: {ip}\nVlan: {vlan}\nTrunk: {trunk}"
+        
 
             # --- NEW LOGIC ---
             # Find all unique devices this node connects to
@@ -289,8 +290,14 @@ def show_network():
                     "shapeProperties": {"useImageSize": False},
                     "size": size,
                     "font": {"size": int(size * 0.6), "color": font_color},
-                    "title": tooltip
-                })
+                    "title": tooltip,
+                    "color": {
+                        "border": "#2B7CE9",
+                        "background": "#97C2FC",
+                        "highlight": {
+                            "border": "#00FF0D",     # Glow effect color
+                            "background": "#FFFACD"  # Glow background}
+                }}})
             elif node_type == "R":
                 size = size_router
                 net.nodes[i].update({
@@ -316,13 +323,22 @@ def show_network():
             elif node_type == "SR":
                 size = size_server
                 net.nodes[i].update({
-                    "shape": "image",
+                    "shape": "circularImage",
                     "image": "static/Imgs/server.png",
                     "label": node_id,
                     "shapeProperties": {"useImageSize": False},
                     "size": size,
                     "font": {"size": int(size * 0.6), "color": font_color},
-                    "title": tooltip
+                    "borderWidth":5,
+                    "title": tooltip,
+                    "color": {
+                        "border": "#F8F8F8",
+                        "background": "#97C2FC",
+                        "highlight": {
+                            "border": "#00FF0D",     # Glow effect color
+                            "background": "#0FFFFF",
+                            "borderWidth": 5  # Glow background}
+                }}
                 })
 
 
@@ -457,13 +473,22 @@ def show_network():
         elif node_type == "SR":
             size = size_server
             net.nodes[i].update({
-                "shape": "image",
+                "shape": "circularImage",
                 "image": "static/Imgs/server.png",
                 "label": node_id,
                 "shapeProperties": {"useImageSize": False},
                 "size": size,
                 "font": {"size": int(size * 0.6), "color": font_color},
-                "title": tooltip
+                "shadow":{"enabled": False},
+                "title": tooltip,
+                "color": {
+                        "border": "#FFFFF",
+                        "background": "#97C2FC",
+                        "highlight": {
+                            "border": "#00FF0D",     # Glow effect color
+                            "background": "#FFFFF",  # Glow background}
+                            "borderWidth": 5
+                }}
             })
         
 
@@ -478,6 +503,7 @@ def show_network():
     filename = "graph.html"
     unique_filename = f"network_{uuid.uuid4().hex}.html"
     file_path = os.path.join("static", "graphs", unique_filename)
+
     net.save_graph(file_path)
     return send_file(file_path)
 
