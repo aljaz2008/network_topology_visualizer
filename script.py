@@ -286,13 +286,22 @@ def show_network():
             if node_type == "H":
                 size = size_user  # Or define a separate size_honeypot if you want
                 net.nodes[i].update({
-                    "shape": "image",
+                    "shape": "circularImage",
                     "image": "static/Imgs/honeypot.jpeg",
                     "label": node_id,
                     "shapeProperties": {"useImageSize": False},
                     "size": size,
                     "font": {"size": int(size * 0.6), "color": font_color},
-                    "title": tooltip
+                    "title": tooltip,
+                    "borderWidth":5,
+                    "color": {
+                        "border": "#FF0F1B",
+                        "background": "#97C2FC",
+                        "highlight": {
+                            "border": "#00FF1E",     # Glow effect color
+                            "background": "#FFFFF",  # Glow background}
+                            "borderWidth": 5
+                }}
                 })
             elif node_type == "P":
                 size = size_switch
@@ -314,8 +323,14 @@ def show_network():
                     "shapeProperties": {"useImageSize": False},
                     "size": size,
                     "font": {"size": int(size * 0.6), "color": font_color},
-                    "title": tooltip
-                })
+                    "title": tooltip,
+                    "color": {
+                        "border": "#2B7CE9",
+                        "background": "#97C2FC",
+                        "highlight": {
+                            "border": "#00FF0D",     # Glow effect color
+                            "background": "#FFFACD"  # Glow background}
+                }}})
             elif node_type == "R":
                 size = size_router
                 net.nodes[i].update({
@@ -341,13 +356,22 @@ def show_network():
             elif node_type == "SR":
                 size = size_server
                 net.nodes[i].update({
-                    "shape": "image",
+                    "shape": "circularImage",
                     "image": "static/Imgs/server.png",
                     "label": node_id,
                     "shapeProperties": {"useImageSize": False},
                     "size": size,
                     "font": {"size": int(size * 0.6), "color": font_color},
-                    "title": tooltip
+                    "borderWidth":5,
+                    "title": tooltip,
+                    "color": {
+                        "border": "#F8F8F8",
+                        "background": "#97C2FC",
+                        "highlight": {
+                            "border": "#00FF0D",     # Glow effect color
+                            "background": "#0FFFFF",
+                            "borderWidth": 5  # Glow background}
+                }}
                 })
 
 
@@ -435,13 +459,21 @@ def show_network():
         if node_type == "H":
             size = size_user
             net.nodes[i].update({
-                "shape": "image",
+                "shape": "circularImage",
                 "image": "static/Imgs/honeypot.jpeg",
                 "label": node_id,
                 "shapeProperties": {"useImageSize": False},
                 "size": size,
                 "font": {"size": int(size * 0.6), "color": font_color},
-                "title": tooltip
+                "title": tooltip,
+                 "color": {
+                        "border": "#FFFFF",
+                        "background": "#97C2FC",
+                        "highlight": {
+                            "border": "#00FF0D",     # Glow effect color
+                            "background": "#FFFFF",  # Glow background}
+                            "borderWidth": 5
+                }}
             })
         elif node_type == "P":
             size = size_switch
@@ -490,13 +522,22 @@ def show_network():
         elif node_type == "SR":
             size = size_server
             net.nodes[i].update({
-                "shape": "image",
+                "shape": "circularImage",
                 "image": "static/Imgs/server.png",
                 "label": node_id,
                 "shapeProperties": {"useImageSize": False},
                 "size": size,
                 "font": {"size": int(size * 0.6), "color": font_color},
-                "title": tooltip
+                "shadow":{"enabled": False},
+                "title": tooltip,
+                "color": {
+                        "border": "#FFFFF",
+                        "background": "#97C2FC",
+                        "highlight": {
+                            "border": "#00FF0D",     # Glow effect color
+                            "background": "#FFFFF",  # Glow background}
+                            "borderWidth": 5
+                }}
             })
 
     edge_stroke_color = "#fff" if font_color == "black" else "#000"
@@ -510,6 +551,7 @@ def show_network():
     filename = "graph.html"
     unique_filename = f"network_{uuid.uuid4().hex}.html"
     file_path = os.path.join("static", "graphs", unique_filename)
+
     net.save_graph(file_path)
     return send_file(file_path)
 
