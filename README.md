@@ -35,8 +35,7 @@ A lightweight, Python-powered tool to visualize and analyze your network using d
    ##### Example of a sheet(LOOK IN EXAMPLES_XLSX folder)(also in screenshots)
    | Port | connected | Type | IP | Vlan | Trunk | Protocol | geoloc |
    |------|-----------|------|----| -----| ----- | ---------| -------|
-   |port on device|name of device connecting to|type of this device|ip of this device| vlan this device is in | Tunk yes/no | Protocol of the device(only in honeypot sheet)
-| geoloc(only in honeypot sheet)  |
+   |port on device|name of device connecting to|type of this device|ip of this device| vlan this device is in | Tunk yes/no | Protocol of the device(only in honeypot sheet) | geoloc(only in honeypot sheet)  |
    
    | Type    | Meaning |
    | -------- | ------- |
