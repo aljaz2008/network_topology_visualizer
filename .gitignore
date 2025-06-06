@@ -2,6 +2,9 @@
 __pycache__/
 *.pyc
 
+#ignore xlsx
+*.xlsx
+
 # Ignore virtual environments
 venv/
 env/
